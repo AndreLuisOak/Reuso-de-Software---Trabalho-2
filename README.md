@@ -1,6 +1,6 @@
 # Serviço POI para Localização de Restaurantes
 
-Microserviço **SOA reutilizável** para localização geográfica de restaurantes (POIs) dentro de uma área especificada.  
+Microserviço **SOA reutilizável** para localização geográfica de restaurantes (POIs) dentro de uma área especificada.
 O serviço utiliza **dados reais do OpenStreetMap (OSM)** por meio da **Overpass API** e aplica **padrões arquiteturais de resiliência** para garantir estabilidade e reuso em ambientes distribuídos.
 
 ---
@@ -9,21 +9,23 @@ O serviço utiliza **dados reais do OpenStreetMap (OSM)** por meio da **Overpass
 
 Este serviço foi projetado para atender aos requisitos do trabalho prático de **Reuso de Software**, demonstrando:
 
-- Construção de um **serviço reutilizável**
-- Aplicação prática de conceitos de **SOA/Microserviços**
-- Uso explícito de **padrões arquiteturais de resiliência**
-- Separação clara de responsabilidades e baixo acoplamento
+* Construção de um **serviço reutilizável**
+* Aplicação prática de conceitos de **SOA/Microserviços**
+* Uso explícito de **padrões arquiteturais de resiliência**
+* Separação clara de responsabilidades e baixo acoplamento
 
 ---
 
 ## 2. Funcionalidades
 
-- Busca restaurantes em um **raio definido (km)** a partir de coordenadas geográficas
-- Integração com **fonte de dados real** (OpenStreetMap / Overpass API)
-- API **REST** documentada automaticamente pelo FastAPI
-- Implementação de **Retry com Exponential Backoff**
-- Cálculo de distância geográfica real usando a **fórmula de Haversine**
-- Serviço **simples, modular e reutilizável** para qualquer arquitetura SOA/Microserviços
+* Busca restaurantes em um **raio definido (km)** a partir de coordenadas geográficas
+* Integração com **fonte de dados real** (OpenStreetMap / Overpass API)
+* API **REST** documentada automaticamente pelo FastAPI
+* Implementação de **Retry com Exponential Backoff**
+* Implementação de **Circuit Breaker** para proteção contra falhas repetidas
+* Cache em memória com **TTL** para reduzir chamadas externas
+* Cálculo de distância geográfica real usando a **fórmula de Haversine**
+* Serviço **simples, modular e reutilizável** para qualquer arquitetura SOA/Microserviços
 
 ---
 
@@ -31,96 +33,132 @@ Este serviço foi projetado para atender aos requisitos do trabalho prático de 
 
 O serviço segue uma arquitetura **SOA**, com separação clara de responsabilidades:
 
+```
 app/
-├── cache.py
-├── main.py
-├── service.py
-├── models.py
-├── schemas.py
-├── utils.py
-└── resilience.py
+├── cache.py        # Cache em memória com TTL
+├── main.py         # Camada de API (FastAPI)
+├── service.py      # Lógica de negócio e integração com OSM
+├── models.py       # Modelos de domínio
+├── schemas.py      # Schemas de entrada e saída (Pydantic)
+├── utils.py        # Funções utilitárias (Haversine)
+└── resilience.py   # Retry + Exponential Backoff + Circuit Breaker
+```
 
 Essa organização facilita:
-- Reuso do serviço
-- Evolução independente
-- Testabilidade
-- Manutenção
+
+* Reuso do serviço
+* Evolução independente
+* Testabilidade
+* Manutenção
 
 ---
-- 3 tentativas automáticas
-- Delay inicial: **0.5s**
-- Backoff exponencial (delay dobra a cada falha)
-- Tratamento transparente de falhas temporárias da Overpass API
+
+## 4. Resiliência e Tolerância a Falhas
+
+### Retry com Exponential Backoff
+
+* 3 tentativas automáticas
+* Delay inicial: **0.5s**
+* Backoff exponencial (delay dobra a cada falha)
+* Tratamento transparente de falhas temporárias da Overpass API
 
 Exemplo de log:
+
+```
 Tentativa 1 falhou: HTTP 429. Nova tentativa em 0.50s.
 Tentativa 2 falhou: Timeout. Nova tentativa em 1.00s.
+```
+
+### Circuit Breaker
+
+* Limite de falhas consecutivas configurável
+* Bloqueia chamadas quando o serviço externo está instável
+* Retorno controlado com erro HTTP 503
 
 ---
 
-Inclua no arquivo `requirements.txt`:
+## 5. Requisitos
 
+### Dependências
+
+O arquivo `requirements.txt` **fica na raiz do projeto (fora da pasta app)**:
+
+```
 fastapi
 uvicorn
 pydantic
 httpx
+```
 
 Instalação:
+
+```bash
 pip install -r requirements.txt
+```
 
-Como Executar
+---
 
-Clone ou copie o projeto
+## 6. Como Executar
 
-Copiar código
+### 1. Clone ou copie o projeto
+
+```bash
 git clone <seu-repositorio>
 cd <seu-repositorio>
+```
 
-Instale as dependências
+### 2. Instale as dependências
 
-Copiar código
+```bash
 pip install -r requirements.txt
+```
 
-Suba o servidor
+### 3. Suba o servidor
 
-Copiar código
+```bash
 uvicorn app.main:app --reload
+```
 
-Acesse a documentação automática
-Swagger UI
-http://127.0.0.1:8000/docs
+### 4. Acesse a documentação automática
 
-ReDoc
-http://127.0.0.1:8000/redoc
+* **Swagger UI:** [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+* **ReDoc:** [http://127.0.0.1:8000/redoc](http://127.0.0.1:8000/redoc)
 
-Endpoints
-Health Check
-GET /health
+---
+
+## 7. Endpoints
+
+### Health Check
+
+**GET** `/health`
 
 Resposta:
 
-json
-Copiar código
+```json
 { "status": "ok" }
-Buscar Restaurantes
-POST /restaurants/search
+```
 
-Corpo da requisição
-json
-Copiar código
+### Buscar Restaurantes
+
+**POST** `/restaurants/search`
+
+Corpo da requisição:
+
+```json
 {
   "center": { "lat": -23.5505, "lon": -46.6333 },
   "radius_km": 2
 }
+```
 
-Resposta
-json
-Copiar código
+Resposta:
+
+```json
 {
   "total": 3,
   "items": [
     {
-      "id": "123456",
+      "id": 123456,
       "name": "Restaurante Exemplo",
       "category": "restaurant",
       "location": {
@@ -130,11 +168,15 @@ Copiar código
     }
   ]
 }
+```
 
-Exemplos de Coordenadas para Teste
-Fortaleza – CE (Centro)
-json
-Copiar código
+---
+
+## 8. Exemplos de Coordenadas para Teste
+
+### Fortaleza – CE (Centro)
+
+```json
 {
   "center": {
     "lat": -3.7327,
@@ -142,9 +184,11 @@ Copiar código
   },
   "radius_km": 5
 }
-Quixadá – CE (Centro)
-json
-Copiar código
+```
+
+### Quixadá – CE (Centro)
+
+```json
 {
   "center": {
     "lat": -4.9721,
@@ -152,9 +196,11 @@ Copiar código
   },
   "radius_km": 3
 }
-Quixadá – CE (Bairro Campo Novo)
-json
-Copiar código
+```
+
+### Quixadá – CE (Bairro Campo Novo)
+
+```json
 {
   "center": {
     "lat": -4.9659,
@@ -162,3 +208,6 @@ Copiar código
   },
   "radius_km": 2
 }
+```
+
+---
