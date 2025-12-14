@@ -74,3 +74,53 @@ def retry(config: RetryConfig):
         return async_wrapper if is_async else sync_wrapper
 
     return decorator
+
+class CircuitBreakerOpen(Exception):
+    pass
+
+
+class CircuitBreaker:
+    """
+    Circuit Breaker simples e reutilizável.
+    """
+
+    def __init__(
+        self,
+        failure_threshold: int = 3,
+        recovery_timeout: int = 30,
+    ):
+        self.failure_threshold = failure_threshold
+        self.recovery_timeout = recovery_timeout
+        self.failure_count = 0
+        self.opened_at = None
+
+    def is_open(self) -> bool:
+        if self.opened_at is None:
+            return False
+
+        if time.time() - self.opened_at >= self.recovery_timeout:
+            self.reset()
+            return False
+
+        return True
+
+    def record_success(self):
+        self.failure_count = 0
+        self.opened_at = None
+
+    def record_failure(self):
+        self.failure_count += 1
+        if self.failure_count >= self.failure_threshold:
+            self.opened_at = time.time()
+
+    def call(self, func: Callable, *args, **kwargs) -> Any:
+        if self.is_open():
+            raise CircuitBreakerOpen("Circuit breaker aberto")
+
+        try:
+            result = func(*args, **kwargs)
+            self.record_success()
+            return result
+        except Exception:
+            self.record_failure()
+            raise
