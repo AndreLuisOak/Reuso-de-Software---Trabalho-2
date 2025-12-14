@@ -1,4 +1,3 @@
-# app/models.py
 from pydantic import BaseModel, Field
 
 
@@ -10,7 +9,7 @@ class Location(BaseModel):
 class RestaurantPOI(BaseModel):
     id: str
     name: str
-    category: str = "restaurant"
+    category: str = "restaurante"
     location: Location
 
 

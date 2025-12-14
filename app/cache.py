@@ -3,9 +3,6 @@ from typing import Any, Dict, Tuple
 
 
 class TTLCache:
-    """
-    Cache simples com tempo de expiração (TTL).
-    """
 
     def __init__(self, ttl_seconds: int = 300):
         self.ttl_seconds = ttl_seconds

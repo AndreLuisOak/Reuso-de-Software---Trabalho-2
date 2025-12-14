@@ -1,4 +1,3 @@
-# app/utils.py
 import math
 from .models import Location
 

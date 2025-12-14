@@ -1,4 +1,3 @@
-# app/resilience.py
 import time
 import asyncio
 import logging
@@ -8,9 +7,6 @@ logger = logging.getLogger("retry")
 
 
 class RetryConfig:
-    """
-    Configuração para o mecanismo de retry com backoff exponencial.
-    """
 
     def __init__(
         self,
@@ -33,10 +29,6 @@ class RetryConfig:
 
 
 def retry(config: RetryConfig):
-    """
-    Decorator para aplicar retry com backoff exponencial.
-    Funciona com funções síncronas e assíncronas.
-    """
 
     def decorator(func: Callable):
         is_async = asyncio.iscoroutinefunction(func)
@@ -80,9 +72,6 @@ class CircuitBreakerOpen(Exception):
 
 
 class CircuitBreaker:
-    """
-    Circuit Breaker simples e reutilizável.
-    """
 
     def __init__(
         self,
