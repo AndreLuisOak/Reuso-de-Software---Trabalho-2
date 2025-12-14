@@ -32,6 +32,7 @@ Este serviço foi projetado para atender aos requisitos do trabalho prático de 
 O serviço segue uma arquitetura **SOA**, com separação clara de responsabilidades:
 
 app/
+├── cache.py
 ├── main.py
 ├── service.py
 ├── models.py
