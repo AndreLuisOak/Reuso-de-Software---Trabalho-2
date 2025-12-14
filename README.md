@@ -1,90 +1,120 @@
-Serviço POI Para Localização de Restaurantes
+# Serviço POI para Localização de Restaurantes
 
-Microserviço SOA reutilizável para localização geográfica de restaurantes (POIs) dentro de uma área especificada.
-O serviço utiliza dados reais do OpenStreetMap via Overpass API e aplica um padrão arquitetural de resiliência (Retry com backoff exponencial) para garantir estabilidade em chamadas externas.
+Microserviço **SOA reutilizável** para localização geográfica de restaurantes (POIs) dentro de uma área especificada.  
+O serviço utiliza **dados reais do OpenStreetMap (OSM)** por meio da **Overpass API** e aplica **padrões arquiteturais de resiliência** para garantir estabilidade e reuso em ambientes distribuídos.
 
-1. Funcionalidades
+---
 
-Busca restaurantes em um raio definido (em km) a partir de uma coordenada geográfica.
+## 1. Objetivo do Projeto
 
-Fonte de dados real via Overpass API.
+Este serviço foi projetado para atender aos requisitos do trabalho prático de **Reuso de Software**, demonstrando:
 
-API REST documentada automaticamente pelo FastAPI.
+- Construção de um **serviço reutilizável**
+- Aplicação prática de conceitos de **SOA/Microserviços**
+- Uso explícito de **padrões arquiteturais de resiliência**
+- Separação clara de responsabilidades e baixo acoplamento
 
-Implementação do padrão de resiliência Retry + Exponential Backoff.
+---
 
-Distância geográfica real calculada com a fórmula de Haversine.
+## 2. Funcionalidades
 
-Serviço simples, modular e reutilizável para qualquer sistema SOA/Microserviço.
+- Busca restaurantes em um **raio definido (km)** a partir de coordenadas geográficas
+- Integração com **fonte de dados real** (OpenStreetMap / Overpass API)
+- API **REST** documentada automaticamente pelo FastAPI
+- Implementação de **Retry com Exponential Backoff**
+- Cálculo de distância geográfica real usando a **fórmula de Haversine**
+- Serviço **simples, modular e reutilizável** para qualquer arquitetura SOA/Microserviços
 
-2. Arquitetura
+---
 
-O serviço segue uma arquitetura SOA com separação clara de responsabilidades:
+## 3. Arquitetura
+
+O serviço segue uma arquitetura **SOA**, com separação clara de responsabilidades:
 
 app/
- ├── main.py           # API FastAPI
- ├── service.py        # Lógica de negócio e integração OSM
- ├── models.py         # Modelos internos (POI, Location)
- ├── schemas.py        # Schemas para entrada e saída (Pydantic)
- ├── utils.py          # Funções auxiliares (Haversine)
- └── resilience.py     # Retry + Exponential Backoff
+├── main.py
+├── service.py
+├── models.py
+├── schemas.py
+├── utils.py
+└── resilience.py
 
-3. Requisitos
-Dependências Python
+Essa organização facilita:
+- Reuso do serviço
+- Evolução independente
+- Testabilidade
+- Manutenção
 
-Inclua no seu requirements.txt:
+---
+- 3 tentativas automáticas
+- Delay inicial: **0.5s**
+- Backoff exponencial (delay dobra a cada falha)
+- Tratamento transparente de falhas temporárias da Overpass API
+
+Exemplo de log:
+Tentativa 1 falhou: HTTP 429. Nova tentativa em 0.50s.
+Tentativa 2 falhou: Timeout. Nova tentativa em 1.00s.
+
+---
+
+Inclua no arquivo `requirements.txt`:
 
 fastapi
 uvicorn
 pydantic
 httpx
 
-
-Instale com:
-
+Instalação:
 pip install -r requirements.txt
 
-4. Como Executar
-1. Clone ou copie o projeto
-git clone <seu-repo>
-cd seu-repo
+Como Executar
 
-2. Instale as dependências
+Clone ou copie o projeto
+
+Copiar código
+git clone <seu-repositorio>
+cd <seu-repositorio>
+
+Instale as dependências
+
+Copiar código
 pip install -r requirements.txt
 
-3. Suba o servidor
+Suba o servidor
+
+Copiar código
 uvicorn app.main:app --reload
 
-4. Acesse a documentação automática
-
-Swagger UI:
-
+Acesse a documentação automática
+Swagger UI
 http://127.0.0.1:8000/docs
 
-
-ReDoc:
-
+ReDoc
 http://127.0.0.1:8000/redoc
 
-5. Endpoints
+Endpoints
 Health Check
 GET /health
 
+Resposta:
 
-Retorno:
-
-{"status": "ok"}
-
+json
+Copiar código
+{ "status": "ok" }
 Buscar Restaurantes
 POST /restaurants/search
 
 Corpo da requisição
+json
+Copiar código
 {
   "center": { "lat": -23.5505, "lon": -46.6333 },
   "radius_km": 2
 }
 
 Resposta
+json
+Copiar código
 {
   "total": 3,
   "items": [
@@ -92,34 +122,42 @@ Resposta
       "id": "123456",
       "name": "Restaurante Exemplo",
       "category": "restaurant",
-      "location": { "lat": -23.5512, "lon": -46.6318 }
+      "location": {
+        "lat": -23.5512,
+        "lon": -46.6318
+      }
     }
   ]
 }
 
-6. Como Funciona a Busca
-
-Recebe um ponto geográfico + raio em km.
-
-Envia um query Overpass para buscar restaurantes reais.
-
-Filtra novamente pela fórmula de Haversine para garantir precisão.
-
-Retorna lista de restaurantes com ID, nome e coordenadas.
-
-7. Resiliência: Retry com Exponential Backoff
-
-Chamadas à Overpass API são encapsuladas em um decorator:
-
-3 tentativas
-
-Delay inicial: 0.5s
-
-Delay dobra a cada falha
-
-Tratamento automático de exceções
-
-Exemplo de log:
-
-Tentativa 1 falhou: HTTP 429. Nova tentativa em 0.50s.
-Tentativa 2 falhou: Timeout. Nova tentativa em 1.00s.
+Exemplos de Coordenadas para Teste
+Fortaleza – CE (Centro)
+json
+Copiar código
+{
+  "center": {
+    "lat": -3.7327,
+    "lon": -38.5270
+  },
+  "radius_km": 5
+}
+Quixadá – CE (Centro)
+json
+Copiar código
+{
+  "center": {
+    "lat": -4.9721,
+    "lon": -39.0150
+  },
+  "radius_km": 3
+}
+Quixadá – CE (Bairro Campo Novo)
+json
+Copiar código
+{
+  "center": {
+    "lat": -4.9659,
+    "lon": -39.0196
+  },
+  "radius_km": 2
+}
