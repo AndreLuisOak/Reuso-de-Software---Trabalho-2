@@ -3,6 +3,9 @@
 Microserviço **SOA reutilizável** para localização geográfica de restaurantes (POIs) dentro de uma área especificada.
 O serviço utiliza **dados reais do OpenStreetMap (OSM)** por meio da **Overpass API** e aplica **padrões arquiteturais de resiliência** para garantir estabilidade e reuso em ambientes distribuídos.
 
+Documento PDF do Relatório: [Relatório Reuso - Trabalho 2.pdf](https://github.com/user-attachments/files/24177185/Relatorio.Reuso.-.Trabalho.2.pdf)
+
+
 ---
 
 ## 1. Objetivo do Projeto
